@@ -1,3 +1,4 @@
+"""
 #imports tkinter, python's standard GUI
 from tkinter import * 
 import tkinter as tk 
@@ -25,3 +26,5 @@ myButton.place(x=100,y=200)
 
 
 window.mainloop()
+"""
+

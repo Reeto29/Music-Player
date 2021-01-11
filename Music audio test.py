@@ -25,7 +25,7 @@ def loading_songs(path):
 
 
 songs=loading_songs(path)
-song_number=random.randrange(0,len(songs))
+song_number=0
 mixer.music.load(songs[song_number])
 volume=1
 
@@ -36,7 +36,8 @@ print ("Welcome to the Music Player!")
 
 while True:
     
-
+    #print(song_number)
+    #print(len(songs))
 
 
     print ("""
@@ -53,6 +54,7 @@ while True:
     8. Decrease Volume 
     9. Skip Song
     10. Exit
+    11. BackSkip Song
 
     """)
 
@@ -98,18 +100,25 @@ while True:
     elif choice == "8":
         volume=(volume-0.25)
         mixer.music.set_volume(volume)
-
     elif choice == "9":
-        song_number=random.randrange(0,len(songs))
-        mixer.music.load(songs[song_number])
-        mixer.music.play()
-
+        if (song_number + 1) == len(songs):
+            continue
+        else:
+            song_number+=1
+            mixer.music.load(songs[song_number])
+            mixer.music.play()
     elif choice == "10":
          quit()
+    elif choice =="11":
+        if (song_number-1) == -1:
+            continue
+        else:
+            song_number-=1
+            mixer.music.load(songs[song_number])
+            mixer.music.play()
 
     else:
-        print ("Please enter a valid number")
-        
+        print ("Please enter a valid number")        
     
         
 
