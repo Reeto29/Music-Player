@@ -48,31 +48,25 @@ volume=1
 #placing the song, album, and artists names onto the player
 def text():
     if shuffled == False:
-        #title_album_name=[]
-        #title_album_name.append((songs[song_number])[((songs[song_number]).rindex('\\')+1):-4])
+        #Cuts the string out from the last instance of a "\\" up to the .mp3 file extension
         title_album_name=(songs[song_number])[((songs[song_number]).rindex('\\')+1):-4]
-        print(title_album_name.index("_"))
-
-        song_title = Label(window, text=(title_album_name[(title_album_name.index("_")+1):title_album_name.rindex("_")]+" "*20), font=("Calibri", 18), background="white", bd=0) #length 20
-        song_title.place(x=125, y=1)
-
-        album_name = Label(window, text=(title_album_name[title_album_name.rindex("_")+1:]+" "*20), font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
-        album_name.place(x=125, y=30)
-
-        artist_name = Label(window, text=(title_album_name[0:title_album_name.index("_")]+" "*20), font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
-        artist_name.place(x=125, y=50)
-
     else:
+        #Cuts the string out from the last instance of a "\\" up to the .mp3 file extension
         title_album_name=(songs_random[random_song_number])[((songs_random[random_song_number]).rindex('\\')+1):-4]
-        
-        song_title = Label(window, text=(title_album_name[(title_album_name.index("_")+1):title_album_name.rindex("_")]+" "*20), font=("Calibri", 18), background="white", bd=0) #length 20
-        song_title.place(x=125, y=1)
 
-        album_name = Label(window, text=(title_album_name[title_album_name.rindex("_")+1:]+" "*20), font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
-        album_name.place(x=125, y=30)
+    #Music File Layout Goes: ArtistName_SongTitle_AlbumName
+    #Cuts the string out from the first underscore to the second underscore
+    song_title = Label(window, text=(title_album_name[(title_album_name.index("_")+1):title_album_name.rindex("_")]+" "*40), font=("Calibri", 18), background="white", bd=0) #length 20
+    song_title.place(x=125, y=1)
 
-        artist_name = Label(window, text=(title_album_name[0:title_album_name.index("_")]+" "*20), font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
-        artist_name.place(x=125, y=50)
+    #Cuts the string out from the last underscore to the end of the string
+    album_name = Label(window, text=(title_album_name[title_album_name.rindex("_")+1:]+" "*40), font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
+    album_name.place(x=125, y=30)
+
+    #Cuts the string out from the beggining og the string to the first underscore
+    artist_name = Label(window, text=(title_album_name[0:title_album_name.index("_")]+" "*40), font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
+    artist_name.place(x=125, y=50)
+
 
 #These are the commands for when the buttons are clicked
 def play_clicked():
@@ -86,15 +80,16 @@ def play_clicked():
         mixer.music.unpause()
         play.place(x=1000,y=90000)
         paused=False
-        text()
     else:
+        #plays the music if it was previously paused
         mixer.music.play()
         paused=True
-        text()
+    text()
     pause.place(x=175, y=80)
     
    
 def pause_clicked():
+    #pauses the music and replaces the pause button with the play
     global paused
     pause.place(x=1000,y=90000)
     play.place(x=175,y=80)
@@ -108,18 +103,22 @@ def skip_clicked():
     global paused
     global shuffled
     global random_song_number
+
+    #Skips the songs
+    #If statement ensures that it doesn't skip out of range
     if (song_number + 1) != len(songs):
         paused=False
+        #Adds one to the variable so that it goes 1 over in the song queue
         song_number+=1
-        random_song_number+=1
 
+        #If the shuffle is on, it will follow the randomized shuffle queue
         if shuffled == False:
             mixer.music.load(songs[song_number])
-            text()
         else:
+            random_song_number+=1
             mixer.music.load(songs_random[random_song_number])
-            text()
 
+        #switches out the buttons
         play.place(x=9000,y=8000)
         pause.place(x=175,y=80)
         play_clicked()
@@ -131,45 +130,44 @@ def backskip_clicked():
     global random_song_number
     if (song_number - 1) != -1:
         paused=False
+        #Adds one to the variable so that it goes 1 over in the song queue
         song_number-=1
-        random_song_number-=1
 
+        #If the shuffle is on, it will follow the randomized shuffle queue
         if shuffled == False:
             mixer.music.load(songs[song_number])
-            text()
         else:
+            random_song_number-=1
             mixer.music.load(songs_random[random_song_number])
-            text()
 
+        #switches out the buttons
         play.place(x=9000,y=8000)
         pause.place(x=175,y=80)
         play_clicked()
         text()
+
 def shuffle_clicked():
     global shuffled
     global songs_random
     global song_number
     global random_song_number
     global paused
+    #makes a copy of the song queue
     songs_random=list.copy(songs)
         
-
-
+    #randomizes the song queue
     if shuffled == True:
         shuffled=False
         paused=False
-        print("shuffle off")
         mixer.music.unload()
         mixer.music.load(songs[song_number])
-        text()
     else:
         shuffled=True
         paused=True
         random.shuffle(songs_random)
-        print("shuffle on")
         mixer.music.unload()
         mixer.music.load(songs_random[random_song_number])
-        text()
+    text()
     pause.place(x=1000,y=90000)
     play.place(x=175,y=80)
     
@@ -192,5 +190,7 @@ skip.place(x=225, y=80)
 shuffle_image = PhotoImage(file="shuffle.png")
 shuffle = Button(window, image=shuffle_image, background="white", borderwidth=0, command=shuffle_clicked)
 shuffle.place(x=275, y=82)
+
+text()
 
 window.mainloop()
