@@ -28,15 +28,7 @@ canvas['bg']="white"
 #album cover placeholder
 canvas.create_rectangle(0,0,120,120,fill="#388eb7",outline=blue)
 
-#placing the song, album, and artists names onto the player
-song_title = Label(window, text="Ballin", font=("Calibri", 20), background="white", bd=0)
-song_title.place(x=125, y=1)
 
-album_name = Label(window, text="Perfect 10", font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
-album_name.place(x=125, y=30)
-
-artist_name = Label(window, text="Mustard, Roddy Ricch", font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
-artist_name.place(x=125, y=50)
 
 #this loads all the mp3 songs in the ICS3U Summative Folder into the player
 def loading_songs(path):
@@ -53,24 +45,55 @@ random_song_number=0
 mixer.music.load(songs[song_number])
 volume=1
 
+#placing the song, album, and artists names onto the player
+def text():
+    if shuffled == False:
+        #title_album_name=[]
+        #title_album_name.append((songs[song_number])[((songs[song_number]).rindex('\\')+1):-4])
+        title_album_name=(songs[song_number])[((songs[song_number]).rindex('\\')+1):-4]
+        print(title_album_name.index("_"))
+
+        song_title = Label(window, text=(title_album_name[(title_album_name.index("_")+1):title_album_name.rindex("_")]+" "*20), font=("Calibri", 18), background="white", bd=0) #length 20
+        song_title.place(x=125, y=1)
+
+        album_name = Label(window, text=(title_album_name[title_album_name.rindex("_")+1:]+" "*20), font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
+        album_name.place(x=125, y=30)
+
+        artist_name = Label(window, text=(title_album_name[0:title_album_name.index("_")]+" "*20), font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
+        artist_name.place(x=125, y=50)
+
+    else:
+        title_album_name=(songs_random[random_song_number])[((songs_random[random_song_number]).rindex('\\')+1):-4]
+        
+        song_title = Label(window, text=(title_album_name[(title_album_name.index("_")+1):title_album_name.rindex("_")]+" "*20), font=("Calibri", 18), background="white", bd=0) #length 20
+        song_title.place(x=125, y=1)
+
+        album_name = Label(window, text=(title_album_name[title_album_name.rindex("_")+1:]+" "*20), font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
+        album_name.place(x=125, y=30)
+
+        artist_name = Label(window, text=(title_album_name[0:title_album_name.index("_")]+" "*20), font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
+        artist_name.place(x=125, y=50)
+
 #These are the commands for when the buttons are clicked
 def play_clicked():
     #recognizes paused as a global function
     global paused
     #plays the song
-
+    
     if paused == True and shuffled == False:
         #unpauses music if it is paused
         #replaces the play button with a pause button
         mixer.music.unpause()
         play.place(x=1000,y=90000)
         paused=False
-
+        text()
     else:
         mixer.music.play()
         paused=True
+        text()
     pause.place(x=175, y=80)
-
+    
+   
 def pause_clicked():
     global paused
     pause.place(x=1000,y=90000)
@@ -92,13 +115,15 @@ def skip_clicked():
 
         if shuffled == False:
             mixer.music.load(songs[song_number])
+            text()
         else:
             mixer.music.load(songs_random[random_song_number])
+            text()
 
         play.place(x=9000,y=8000)
         pause.place(x=175,y=80)
         play_clicked()
-   
+        text()
 
 def backskip_clicked():
     global song_number
@@ -111,13 +136,15 @@ def backskip_clicked():
 
         if shuffled == False:
             mixer.music.load(songs[song_number])
+            text()
         else:
             mixer.music.load(songs_random[random_song_number])
+            text()
 
         play.place(x=9000,y=8000)
         pause.place(x=175,y=80)
         play_clicked()
-
+        text()
 def shuffle_clicked():
     global shuffled
     global songs_random
@@ -125,11 +152,7 @@ def shuffle_clicked():
     global random_song_number
     global paused
     songs_random=list.copy(songs)
-
-
-   
-    print(songs)
-    print(songs_random)
+        
 
 
     if shuffled == True:
@@ -138,7 +161,7 @@ def shuffle_clicked():
         print("shuffle off")
         mixer.music.unload()
         mixer.music.load(songs[song_number])
-        print(songs[song_number])
+        text()
     else:
         shuffled=True
         paused=True
@@ -146,10 +169,10 @@ def shuffle_clicked():
         print("shuffle on")
         mixer.music.unload()
         mixer.music.load(songs_random[random_song_number])
-        print(songs_random[random_song_number])
+        text()
     pause.place(x=1000,y=90000)
     play.place(x=175,y=80)
-
+    
 #placing down the different buttons
 backskipimage = PhotoImage(file="BackSkip.png")
 backskip = Button(window, image=backskipimage, background="white", borderwidth=0, command=backskip_clicked)
