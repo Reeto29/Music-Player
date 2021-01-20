@@ -1,7 +1,8 @@
 #imports tkinter, python's standard GUI
 from tkinter import *
+from mutagen.mp3 import MP3
 import tkinter as tk
-
+import tkinter.ttk as ttk
 #imports the different modules required for playing music
 from pygame import mixer
 import os
@@ -12,6 +13,7 @@ mixer.init()
 number=1
 paused=False
 shuffled=False
+
 
 #the main tkinter window
 window = tk.Tk()
@@ -26,8 +28,24 @@ blue="#f3faff"
 canvas['bg']="white"
 
 #album cover placeholder
-canvas.create_rectangle(0,0,120,120,fill="#388eb7",outline=blue)
+maxframes = 15
 
+gif_list=["city_explosion.gif","cityscape.gif","gundam.gif","motorcycle.gif","porsche.gif","robot_man.gif"]
+gif_index=4
+frames = [PhotoImage(file=('gifs\\'+gif_list[gif_index]),format = 'gif -index %i' %(i)) for i in range(maxframes)]
+
+def next_picture(frame_count):
+
+    frame = frames[frame_count]
+    frame_count += 1
+    if frame_count == maxframes:
+        frame_count = 0
+    gif_image.configure(image=frame)
+    window.after(100, next_picture, frame_count)
+
+gif_image = Label(window,borderwidth=0)
+gif_image.place(x=0,y=0)
+window.after(0, next_picture, 0)
 
 
 #this loads all the mp3 songs in the ICS3U Summative Folder into the player
@@ -36,15 +54,53 @@ def loading_songs(path):
     for filename in os.listdir(path):
         if filename.endswith(".mp3"):
             songs.append(os.path.join(path,filename))
+        
     return songs
-
+    
 #loads the songs in
 songs=loading_songs(path)
 song_number=0
 random_song_number=0
 mixer.music.load(songs[song_number])
+
 volume=1
 
+
+#Grab Song Length
+def play_time():
+    #Grab current song time
+    current_time = mixer.music.get_pos() / 1000
+    #Temporary Label to get data
+    slider_label.config(text=f'Slider: {int(my_slider.get())} and Song Pos: {int(current_time)}') 
+    #convert to time format
+    converted_current_time = time.strftime('%M:%S', time.gmtime(current_time))
+
+    #Get CUrrently Playing Song
+    if shuffled == False:
+        current_song = os.path.splitext(songs[song_number])
+
+    else:
+        current_song = os.path.splitext(songs_random[random_song_number])
+        
+
+    print (current_song)
+    # Get Song with Mutagen
+    
+    audio=MP3(songs[song_number])
+    global total_length
+    total_length = audio.info.length
+    
+    #Convert to Time format
+    converted_total_length = time.strftime('%M:%S', time.gmtime(total_length))
+   
+    #Output time to status bar
+    status_bar.config(text=f'Time Elapsed: {converted_current_time} of  {converted_total_length}')
+    #updating slider position to proper position in song
+    my_slider.config(value=int(current_time))
+
+       #updates time
+    status_bar.after(1000, play_time)
+    
 #placing the song, album, and artists names onto the player
 def text():
     if shuffled == False:
@@ -83,10 +139,15 @@ def play_clicked():
     else:
         #plays the music if it was previously paused
         mixer.music.play()
+        
         paused=True
     text()
     pause.place(x=175, y=80)
-    
+    #calling the play_time function to get the song length
+    play_time()
+    #update slider to proper position
+    slider_position = int(total_length)
+    my_slider.config(to=slider_position, value=0)
    
 def pause_clicked():
     #pauses the music and replaces the pause button with the play
@@ -103,6 +164,8 @@ def skip_clicked():
     global paused
     global shuffled
     global random_song_number
+    global gif_index
+
 
     #Skips the songs
     #If statement ensures that it doesn't skip out of range
@@ -110,6 +173,7 @@ def skip_clicked():
         paused=False
         #Adds one to the variable so that it goes 1 over in the song queue
         song_number+=1
+        gif_index+=1
 
         #If the shuffle is on, it will follow the randomized shuffle queue
         if shuffled == False:
@@ -128,10 +192,14 @@ def backskip_clicked():
     global song_number
     global paused
     global random_song_number
+    global gif_index
+
+    
     if (song_number - 1) != -1:
         paused=False
         #Adds one to the variable so that it goes 1 over in the song queue
         song_number-=1
+        gif_index-=1
 
         #If the shuffle is on, it will follow the randomized shuffle queue
         if shuffled == False:
@@ -170,7 +238,15 @@ def shuffle_clicked():
     text()
     pause.place(x=1000,y=90000)
     play.place(x=175,y=80)
+
+def slide(x):
     
+    slider_label.config(text=f'{int(my_slider.get())} of {int(total_length)}')
+    songs=loading_songs(path)
+    song_number=0
+    random_song_number=0
+  
+
 #placing down the different buttons
 backskipimage = PhotoImage(file="BackSkip.png")
 backskip = Button(window, image=backskipimage, background="white", borderwidth=0, command=backskip_clicked)
@@ -192,5 +268,14 @@ shuffle = Button(window, image=shuffle_image, background="white", borderwidth=0,
 shuffle.place(x=275, y=82)
 
 text()
+
+status_bar = Label(window, text="", bd=1, relief=GROOVE, anchor=E )
+status_bar.pack(fill=X, side=BOTTOM, ipady=2)
+
+my_slider = ttk.Scale(window, from_=0, to=100, orient=HORIZONTAL, value=0, command=slide, length=360)
+my_slider.pack(pady=30)
+
+slider_label = Label(window, text="0")
+slider_label.pack(pady=10)
 
 window.mainloop()

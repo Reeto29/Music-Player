@@ -1,30 +1,32 @@
-"""
-#imports tkinter, python's standard GUI
-from tkinter import * 
-import tkinter as tk 
-
-#the main tkinter window
+from tkinter import *
+import tkinter as tk
+##
+import time
+import os
 window = tk.Tk()
-window.title("MusicPlayer")
 
-#creating the gui background
-canvas=tk.Canvas(master=window, width=360, height=680)
+
+
+maxframes = 15
+
+gif_list=["city_explosion.gif","cityscape.gif","gundam.gif","motorcycle.gif","porsche.gif","robot_man.gif"]
+gif_index=3
+frames = [PhotoImage(file=('gifs\\'+gif_list[gif_index]),format = 'gif -index %i' %(i)) for i in range(maxframes)]
+canvas=tk.Canvas(master=window, width=360, height=120)
 canvas.pack()
 
-#######################
-color="green"
-canvas.create_rectangle(-10,-10,370,270,fill=color)
+def next_picture(frame_count):
 
-def myclick():
-    print("aaa")
-    global color="blue"
-    color="blue"
+    frame = frames[frame_count]
+    frame_count += 1
+    if frame_count == maxframes:
+        frame_count = 0
+    gif_image.configure(image=frame)
+    window.after(100, next_picture, frame_count)
 
-myButton = Button(canvas, text = "Click Me!",command=myclick)
-myButton.place(x=100,y=200)
+gif_image = Label(window)
+gif_image.place(x=0,y=0)
+window.after(0, next_picture, 0)
 
-
-
+###
 window.mainloop()
-"""
-
