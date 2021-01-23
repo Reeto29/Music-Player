@@ -1,20 +1,26 @@
 #imports tkinter, python's standard GUI
 from tkinter import *
-from mutagen.mp3 import MP3
 import tkinter as tk
 import tkinter.ttk as ttk
+
 #imports the different modules required for playing music
+from mutagen.mp3 import MP3
 from pygame import mixer
 import os
 import random
 import time
+
+#This path goes straight to you song folder
+#You will have to change this, as it is specific to your device
+
 path=r"C:\Users\REETO\Documents\GitHub\ICS3U_Summative\Songs"
 mixer.init()
-number=1
 paused=False
 shuffled=False
+volume=1
 converted_current_time=""
 converted_total_length=""
+
 #the main tkinter window
 window = tk.Tk()
 window.title("MusicPlayer")
@@ -30,8 +36,13 @@ canvas['bg']="white"
 #album cover placeholder
 maxframes = 15
 
+#List of all of the gif files
 gif_list=["city_explosion.gif","cityscape.gif","gundam.gif","motorcycle.gif","porsche.gif","robot_man.gif"]
 gif_index=0
+
+#PhotoImage is mainly meant for images
+#This means that for GIFS, one must render each frame
+#This program renders each frame
 frames = [PhotoImage(file=('gifs\\'+gif_list[gif_index]),format = 'gif -index %i' %(i)) for i in range(maxframes)]
 def next_picture(frame_count):
 
@@ -44,11 +55,9 @@ def next_picture(frame_count):
 
 gif_image = Label(window,borderwidth=0)
 gif_image.place(x=0,y=0)
-
 window.after(0, next_picture, 0)
 
-
-#this loads all the mp3 songs in the ICS3U Summative Folder into the player
+#This  Program loads all the mp3 songs in the ICS3U Summative Folder into the player
 def loading_songs(path):
     songs=[]
     for filename in os.listdir(path):
@@ -57,21 +66,20 @@ def loading_songs(path):
         
     return songs
     
-#loads the songs in
+#Loads the songs in
 songs=loading_songs(path)
 song_number=0
 random_song_number=0
 mixer.music.load(songs[song_number])
 
-volume=1
-
-
 #Grab Song Length
 def play_time():
     #Grab current song time
     current_time = mixer.music.get_pos() / 1000
+
     #Temporary Label to get data
     slider_label.config(text=f'Slider: {int(my_slider.get())} and Song Pos: {int(current_time)}') 
+
     #convert to time format
     global converted_current_time
     converted_current_time = time.strftime('%M:%S', time.gmtime(current_time))
@@ -83,9 +91,7 @@ def play_time():
     else:
         current_song = os.path.splitext(songs_random[random_song_number])
         
-
     # Get Song with Mutagen
-    
     audio=MP3(songs[song_number])
     global total_length
     total_length = audio.info.length
@@ -98,6 +104,7 @@ def play_time():
     status_bar.config(text=f'Time Elapsed: {converted_current_time} of  {converted_total_length}')
     song_progress.config(text=f'{converted_current_time} of  {converted_total_length}')
     song_length.config(text=converted_total_length)
+    
     #updating slider position to proper position in song
     my_slider.config(value=int(current_time))
 
@@ -106,37 +113,50 @@ def play_time():
     
 #placing the song, album, and artists names onto the player
 def text():
-    if shuffled == False:
-        #Cuts the string out from the last instance of a "\\" up to the .mp3 file extension
-        title_album_name=(songs[song_number])[((songs[song_number]).rindex('\\')+1):-4]
-    else:
-        #Cuts the string out from the last instance of a "\\" up to the .mp3 file extension
-        title_album_name=(songs_random[random_song_number])[((songs_random[random_song_number]).rindex('\\')+1):-4]
+    try:
+        if shuffled == False:
+            #Cuts the string out from the last instance of a "\\" up to the .mp3 file extension
+            title_album_name=(songs[song_number])[((songs[song_number]).rindex('\\')+1):-4]
+        else:
+            #Cuts the string out from the last instance of a "\\" up to the .mp3 file extension
+            title_album_name=(songs_random[random_song_number])[((songs_random[random_song_number]).rindex('\\')+1):-4]
 
-    #Music File Layout Goes: ArtistName_SongTitle_AlbumName
-    #Cuts the string out from the first underscore to the second underscore
-    song_title = Label(window, text=(title_album_name[(title_album_name.index("_")+1):title_album_name.rindex("_")]+" "*40), font=("Calibri", 18), background="white", bd=0) #length 20
-    song_title.place(x=125, y=1)
+        #Music File Layout Goes: ArtistName_SongTitle_AlbumName
+        #Cuts the string out from the first underscore to the second underscore
+        song_title = Label(window, text=(title_album_name[(title_album_name.index("_")+1):title_album_name.rindex("_")]+" "*40), font=("Calibri", 18), background="white", bd=0) #length 20
+        song_title.place(x=125, y=1)
 
-    #Cuts the string out from the last underscore to the end of the string
-    album_name = Label(window, text=(title_album_name[title_album_name.rindex("_")+1:]+" "*40), font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
-    album_name.place(x=125, y=30)
+        #Cuts the string out from the last underscore to the end of the string
+        album_name = Label(window, text=(title_album_name[title_album_name.rindex("_")+1:]+" "*40), font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
+        album_name.place(x=125, y=30)
 
-    #Cuts the string out from the beggining og the string to the first underscore
-    artist_name = Label(window, text=(title_album_name[0:title_album_name.index("_")]+" "*40), font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
-    artist_name.place(x=125, y=50)
+        #Cuts the string out from the beggining og the string to the first underscore
+        artist_name = Label(window, text=(title_album_name[0:title_album_name.index("_")]+" "*40), font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
+        artist_name.place(x=125, y=50)
 
+    except ValueError:
 
-#These are the commands for when the buttons are clicked
+        #In case music file layout is not followed, this program will write state it as 'unknown'
+        song_title = Label(window, text=("Unknown Song" + " "*40), font=("Calibri", 18), background="white", bd=0) #length 20
+        song_title.place(x=125, y=1)
+
+        album_name = Label(window, text=("Unknown Album" + " "*40), font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
+        album_name.place(x=125, y=30)
+
+        artist_name = Label(window, text=("Unknown Artist" + " "*40), font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
+        artist_name.place(x=125, y=50)
+
 def set_vol(val):
     #casting value so that it can be detected as a value from 0-1 for the mixer
     volume = int(val)/100
     #setting the volume  
     mixer.music.set_volume(volume)
 
+#These are the commands for when the buttons are clicked
 def play_clicked():
+    global converted_current_time
+    global converted_total_length
     
-
     #recognizes paused as a global function
     global paused
     #plays the song
@@ -152,13 +172,13 @@ def play_clicked():
         mixer.music.play()
         
         paused=True
-    global converted_current_time
-    global converted_total_length
+
     if converted_current_time == converted_total_length:
         my_slider.config(value=0)
 
         
     text()
+
     pause.place(x=175, y=80)
     #calling the play_time function to get the song length
     play_time()
@@ -184,6 +204,8 @@ def skip_clicked():
     global gif_index
     global frames
 
+    if (gif_index+1) != len(gif_list):
+        gif_index+=1
 
     #Skips the songs
     #If statement ensures that it doesn't skip out of range
@@ -191,7 +213,7 @@ def skip_clicked():
         paused=False
         #Adds one to the variable so that it goes 1 over in the song queue
         song_number+=1
-        gif_index+=1
+
 
         #If the shuffle is on, it will follow the randomized shuffle queue
         if shuffled == False:
@@ -215,7 +237,9 @@ def backskip_clicked():
     global gif_index
     global frames
 
-    
+    if (gif_index-1) != -1:
+        gif_index-=1
+
     if (song_number - 1) != -1:
         paused=False
         #Adds one to the variable so that it goes 1 over in the song queue
@@ -292,8 +316,10 @@ shuffle_image = PhotoImage(file="shuffle.png")
 shuffle = Button(window, image=shuffle_image, background="white", borderwidth=0, command=shuffle_clicked)
 shuffle.place(x=275, y=82)
 
+#placing down the text
 text()
 
+#placing down the song position labels and sliders
 song_progress=Label(window,text="0:00",font=("Calibri", 9), background="white", bd=0)
 song_progress.place(x=2,y=136)
 
