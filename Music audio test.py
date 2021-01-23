@@ -4,7 +4,7 @@ from pygame import mixer
 import os
 import random
 import time
-path=r"C:\Users\REETO\Documents\GitHub\ICS3U_Summative"
+path=r"C:\Users\REETO\Documents\GitHub\ICS3U_Summative\Songs"
 mixer.init()
 number=1
 muted=0

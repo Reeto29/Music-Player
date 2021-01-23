@@ -13,14 +13,14 @@ mixer.init()
 number=1
 paused=False
 shuffled=False
-
-
+converted_current_time=""
+converted_total_length=""
 #the main tkinter window
 window = tk.Tk()
 window.title("MusicPlayer")
 
 #creating the gui background
-canvas=tk.Canvas(master=window, width=360, height=120)
+canvas=tk.Canvas(master=window, width=360, height=160)
 canvas.pack()
 
 #the two main background colors
@@ -31,9 +31,8 @@ canvas['bg']="white"
 maxframes = 15
 
 gif_list=["city_explosion.gif","cityscape.gif","gundam.gif","motorcycle.gif","porsche.gif","robot_man.gif"]
-gif_index=4
+gif_index=0
 frames = [PhotoImage(file=('gifs\\'+gif_list[gif_index]),format = 'gif -index %i' %(i)) for i in range(maxframes)]
-
 def next_picture(frame_count):
 
     frame = frames[frame_count]
@@ -45,6 +44,7 @@ def next_picture(frame_count):
 
 gif_image = Label(window,borderwidth=0)
 gif_image.place(x=0,y=0)
+
 window.after(0, next_picture, 0)
 
 
@@ -73,8 +73,9 @@ def play_time():
     #Temporary Label to get data
     slider_label.config(text=f'Slider: {int(my_slider.get())} and Song Pos: {int(current_time)}') 
     #convert to time format
+    global converted_current_time
     converted_current_time = time.strftime('%M:%S', time.gmtime(current_time))
-
+    
     #Get CUrrently Playing Song
     if shuffled == False:
         current_song = os.path.splitext(songs[song_number])
@@ -83,7 +84,6 @@ def play_time():
         current_song = os.path.splitext(songs_random[random_song_number])
         
 
-    print (current_song)
     # Get Song with Mutagen
     
     audio=MP3(songs[song_number])
@@ -91,10 +91,13 @@ def play_time():
     total_length = audio.info.length
     
     #Convert to Time format
+    global converted_total_length
     converted_total_length = time.strftime('%M:%S', time.gmtime(total_length))
    
     #Output time to status bar
     status_bar.config(text=f'Time Elapsed: {converted_current_time} of  {converted_total_length}')
+    song_progress.config(text=f'{converted_current_time} of  {converted_total_length}')
+    song_length.config(text=converted_total_length)
     #updating slider position to proper position in song
     my_slider.config(value=int(current_time))
 
@@ -125,7 +128,15 @@ def text():
 
 
 #These are the commands for when the buttons are clicked
+def set_vol(val):
+    #casting value so that it can be detected as a value from 0-1 for the mixer
+    volume = int(val)/100
+    #setting the volume  
+    mixer.music.set_volume(volume)
+
 def play_clicked():
+    
+
     #recognizes paused as a global function
     global paused
     #plays the song
@@ -141,6 +152,12 @@ def play_clicked():
         mixer.music.play()
         
         paused=True
+    global converted_current_time
+    global converted_total_length
+    if converted_current_time == converted_total_length:
+        my_slider.config(value=0)
+
+        
     text()
     pause.place(x=175, y=80)
     #calling the play_time function to get the song length
@@ -165,6 +182,7 @@ def skip_clicked():
     global shuffled
     global random_song_number
     global gif_index
+    global frames
 
 
     #Skips the songs
@@ -183,6 +201,8 @@ def skip_clicked():
             mixer.music.load(songs_random[random_song_number])
 
         #switches out the buttons
+        frames = [PhotoImage(file=('gifs\\'+gif_list[gif_index]),format = 'gif -index %i' %(i)) for i in range(maxframes)]
+
         play.place(x=9000,y=8000)
         pause.place(x=175,y=80)
         play_clicked()
@@ -193,6 +213,7 @@ def backskip_clicked():
     global paused
     global random_song_number
     global gif_index
+    global frames
 
     
     if (song_number - 1) != -1:
@@ -207,6 +228,8 @@ def backskip_clicked():
         else:
             random_song_number-=1
             mixer.music.load(songs_random[random_song_number])
+        
+        frames = [PhotoImage(file=('gifs\\'+gif_list[gif_index]),format = 'gif -index %i' %(i)) for i in range(maxframes)]
 
         #switches out the buttons
         play.place(x=9000,y=8000)
@@ -215,6 +238,7 @@ def backskip_clicked():
         text()
 
 def shuffle_clicked():
+    my_slider.config(value=0)
     global shuffled
     global songs_random
     global song_number
@@ -228,6 +252,7 @@ def shuffle_clicked():
         shuffled=False
         paused=False
         mixer.music.unload()
+       
         mixer.music.load(songs[song_number])
     else:
         shuffled=True
@@ -269,13 +294,24 @@ shuffle.place(x=275, y=82)
 
 text()
 
-status_bar = Label(window, text="", bd=1, relief=GROOVE, anchor=E )
-status_bar.pack(fill=X, side=BOTTOM, ipady=2)
+song_progress=Label(window,text="0:00",font=("Calibri", 9), background="white", bd=0)
+song_progress.place(x=2,y=136)
 
-my_slider = ttk.Scale(window, from_=0, to=100, orient=HORIZONTAL, value=0, command=slide, length=360)
-my_slider.pack(pady=30)
+song_length=Label(window,text="0:00",font=("Calibri", 9), background="white", bd=0)
+song_length.place(x=336,y=136)
+
+style=ttk.Style()
+style.configure('.', background='white')
+
+status_bar = Label(window, text="", bd=1, relief=GROOVE, anchor=E )
+
+my_slider = ttk.Scale(window, from_=0, to=100, orient=HORIZONTAL, value=0, command=slide, length=300)
+my_slider.place(x=32,y=132)
 
 slider_label = Label(window, text="0")
-slider_label.pack(pady=10)
+
+#volume_scale = Scale(window, from_=0, to=100,orient = HORIZONTAL, command= set_vol)
+#volume_scale.set(100)
+#volume_scale.pack()
 
 window.mainloop()
