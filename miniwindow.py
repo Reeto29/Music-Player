@@ -18,6 +18,7 @@ mixer.init()
 paused=False
 shuffled=False
 volume=1
+resized=False
 converted_current_time=""
 converted_total_length=""
 
@@ -25,12 +26,14 @@ converted_total_length=""
 window = tk.Tk()
 window.title("MusicPlayer")
 
-#creating the gui background
-canvas=tk.Canvas(master=window, width=360, height=160)
-canvas.pack()
+canvas = Canvas(window, width=585, height=160)
+canvas.place(x=0,y=0)
 
-#the two main background colors
-blue="#f3faff"
+#creating the gui background
+window.geometry("365x160")
+canvas.create_rectangle(365,0,585,160,fill="white",outline="")
+
+#the background
 canvas['bg']="white"
 
 #album cover placeholder
@@ -92,7 +95,10 @@ def play_time():
         current_song = os.path.splitext(songs_random[random_song_number])
         
     # Get Song with Mutagen
-    audio=MP3(songs[song_number])
+    if shuffled == False:
+        audio=MP3(songs[song_number])
+    else:
+        audio=MP3(songs_random[random_song_number])
     global total_length
     total_length = audio.info.length
     
@@ -101,18 +107,23 @@ def play_time():
     converted_total_length = time.strftime('%M:%S', time.gmtime(total_length))
    
     #Output time to status bar
-    status_bar.config(text=f'Time Elapsed: {converted_current_time} of  {converted_total_length}')
-    song_progress.config(text=f'{converted_current_time} of  {converted_total_length}')
-    song_length.config(text=converted_total_length)
+    def song():
+        status_bar.config(text=f'Time Elapsed: {converted_current_time} of  {converted_total_length}')
+        song_progress.config(text=f'{converted_current_time} of  {converted_total_length}')
+        song_length.config(text=converted_total_length)
+        #updating slider position to proper position in song
+        my_slider.config(value=int(current_time))
+    song()
     
-    #updating slider position to proper position in song
-    my_slider.config(value=int(current_time))
+    
 
        #updates time
     status_bar.after(1000, play_time)
     
 #placing the song, album, and artists names onto the player
 def text():
+    global song_title
+    global title_album_name
     try:
         if shuffled == False:
             #Cuts the string out from the last instance of a "\\" up to the .mp3 file extension
@@ -121,23 +132,25 @@ def text():
             #Cuts the string out from the last instance of a "\\" up to the .mp3 file extension
             title_album_name=(songs_random[random_song_number])[((songs_random[random_song_number]).rindex('\\')+1):-4]
 
+        space_count=(19-(len(title_album_name[(title_album_name.index("_")+1):title_album_name.rindex("_")])))
+
         #Music File Layout Goes: ArtistName_SongTitle_AlbumName
         #Cuts the string out from the first underscore to the second underscore
-        song_title = Label(window, text=(title_album_name[(title_album_name.index("_")+1):title_album_name.rindex("_")]+" "*40), font=("Calibri", 18), background="white", bd=0) #length 20
+        song_title = Label(window, text=(title_album_name[(title_album_name.index("_")+1):title_album_name.rindex("_")]+(" "*space_count)), font=("Calibri", 18), background="white", bd=0) #length 20
         song_title.place(x=125, y=1)
 
         #Cuts the string out from the last underscore to the end of the string
-        album_name = Label(window, text=(title_album_name[title_album_name.rindex("_")+1:]+" "*40), font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
+        album_name = Label(window, text=(title_album_name[title_album_name.rindex("_")+1:]+" "*30), font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
         album_name.place(x=125, y=30)
 
         #Cuts the string out from the beggining og the string to the first underscore
-        artist_name = Label(window, text=(title_album_name[0:title_album_name.index("_")]+" "*40), font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
+        artist_name = Label(window, text=(title_album_name[0:title_album_name.index("_")]+" "*30), font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
         artist_name.place(x=125, y=50)
 
     except ValueError:
 
         #In case music file layout is not followed, this program will write state it as 'unknown'
-        song_title = Label(window, text=("Unknown Song" + " "*40), font=("Calibri", 18), background="white", bd=0) #length 20
+        song_title = Label(window, text=("Unknown Song" + " "*40), font=("Calibri", 18), background="white", bd=0)
         song_title.place(x=125, y=1)
 
         album_name = Label(window, text=("Unknown Album" + " "*40), font=("Calibri", 12), fg = "#3f3f3f", background="white", bd =0)
@@ -153,47 +166,34 @@ def set_vol(val):
     mixer.music.set_volume(volume)
 
 #These are the commands for when the buttons are clicked
-def play_clicked():
-    global converted_current_time
-    global converted_total_length
-    
-    #recognizes paused as a global function
-    global paused
-    #plays the song
-    
-    if paused == True and shuffled == False:
-        #unpauses music if it is paused
-        #replaces the play button with a pause button
-        mixer.music.unpause()
-        play.place(x=1000,y=90000)
-        paused=False
+
+#This outputs the queue onto the screen
+def queue_list():
+    global shuffled
+    global songs_random
+    song_shortened_list=[]
+
+    if shuffled==True:
+        for i in range(len(songs_random)):
+            canvas.create_line(365,i*30,545,i*30)
+            song_shortened_list.append(((songs_random)[i])[((songs_random[i]).rindex('\\')+1):-4])
+            song_shortened_list=(','.join(song_shortened_list))
+            song_shortened_list=song_shortened_list.replace("_"," ")
+            album_name = Label(window, text=(f"{song_shortened_list+(' '*19)}"), font=("Calibri", 9), fg = "#3f3f3f", background="white", bd =0)   
+            album_name.place(x=365, y=((i+0.25)*30))
+            song_shortened_list=[]
+            canvas.create_line(365,i*30,545,i*30)
     else:
-        #plays the music if it was previously paused
-        mixer.music.play()
-        
-        paused=True
+        for i in range(len(songs)):
+            canvas.create_line(365,i*30,545,i*30)
 
-    if converted_current_time == converted_total_length:
-        my_slider.config(value=0)
-
-        
-    text()
-
-    pause.place(x=175, y=80)
-    #calling the play_time function to get the song length
-    play_time()
-    #update slider to proper position
-    slider_position = int(total_length)
-    my_slider.config(to=slider_position, value=0)
-   
-def pause_clicked():
-    #pauses the music and replaces the pause button with the play
-    global paused
-    pause.place(x=1000,y=90000)
-    play.place(x=175,y=80)
-    mixer.music.pause()
-    paused = True
-
+            song_shortened_list.append(((songs)[i])[((songs[i]).rindex('\\')+1):-4])
+            song_shortened_list=(','.join(song_shortened_list))
+            song_shortened_list=song_shortened_list.replace("_"," ")
+            album_name = Label(window, text=(f"{song_shortened_list+(' '*19)}"), font=("Calibri", 9), fg = "#3f3f3f", background="white", bd =0)   
+            album_name.place(x=365, y=((i+0.25)*30))
+            song_shortened_list=[]
+    canvas.create_line(365,150,545,150)
 
 def skip_clicked():
     global song_number
@@ -204,15 +204,13 @@ def skip_clicked():
     global gif_index
     global frames
 
-    if (gif_index+1) != len(gif_list):
-        gif_index+=1
-
     #Skips the songs
     #If statement ensures that it doesn't skip out of range
     if (song_number + 1) != len(songs):
         paused=False
         #Adds one to the variable so that it goes 1 over in the song queue
         song_number+=1
+        gif_index+=1
 
 
         #If the shuffle is on, it will follow the randomized shuffle queue
@@ -230,6 +228,7 @@ def skip_clicked():
         play_clicked()
         text()
 
+
 def backskip_clicked():
     global song_number
     global paused
@@ -237,8 +236,6 @@ def backskip_clicked():
     global gif_index
     global frames
 
-    if (gif_index-1) != -1:
-        gif_index-=1
 
     if (song_number - 1) != -1:
         paused=False
@@ -261,6 +258,53 @@ def backskip_clicked():
         play_clicked()
         text()
 
+def play_clicked():
+    global converted_current_time
+    global converted_total_length
+    
+    #recognizes paused as a global function
+    global paused
+    #plays the song
+    
+    if paused == True and shuffled == False or paused == True and shuffled == True:
+        #unpauses music if it is paused
+        #replaces the play button with a pause button
+        mixer.music.unpause()
+        play.place(x=1000,y=90000)
+        
+        paused=False
+        
+        mixer.music.play
+    else:
+        #plays the music if it was previously paused
+        mixer.music.play()
+        
+        paused=True
+
+    if converted_current_time == converted_total_length:
+        my_slider.config(value=0)
+
+        
+    text()
+    
+    pause.place(x=175, y=80)
+    #calling the play_time function to get the song length
+    play_time()
+    #update slider to proper position
+    slider_position = int(total_length)
+    my_slider.config(to=slider_position, value=0)
+   
+def pause_clicked():
+    #pauses the music and replaces the pause button with the play
+    global paused
+    pause.place(x=1000,y=90000)
+    play.place(x=175,y=80)
+    mixer.music.pause()
+    paused = True
+
+
+
+
 def shuffle_clicked():
     my_slider.config(value=0)
     global shuffled
@@ -273,20 +317,27 @@ def shuffle_clicked():
         
     #randomizes the song queue
     if shuffled == True:
+        play_time()
         shuffled=False
         paused=False
         mixer.music.unload()
        
         mixer.music.load(songs[song_number])
     else:
+        play_time()
         shuffled=True
         paused=True
         random.shuffle(songs_random)
         mixer.music.unload()
         mixer.music.load(songs_random[random_song_number])
     text()
-    pause.place(x=1000,y=90000)
-    play.place(x=175,y=80)
+    queue_list()
+    play_time()
+    
+    skip_clicked()
+    backskip_clicked()
+
+    
 
 def slide(x):
     
@@ -295,7 +346,19 @@ def slide(x):
     song_number=0
     random_song_number=0
   
+#resizes the canvas
+def resize():
+    global resized
+    global title_album_name
+    if resized == False:
+        window.geometry("585x160")
+        resized = True
+    else:
+        window.geometry("365x160")
+        resized = False
 
+    queue_list()
+    
 #placing down the different buttons
 backskipimage = PhotoImage(file="BackSkip.png")
 backskip = Button(window, image=backskipimage, background="white", borderwidth=0, command=backskip_clicked)
@@ -312,9 +375,13 @@ skipimage = PhotoImage(file="Skip.png")
 skip = Button(window, image=skipimage, background="white", borderwidth=0, command=skip_clicked)
 skip.place(x=225, y=80)
 
-shuffle_image = PhotoImage(file="shuffle.png")
-shuffle = Button(window, image=shuffle_image, background="white", borderwidth=0, command=shuffle_clicked)
+shuffleimage = PhotoImage(file="shuffle.png")
+shuffle = Button(window, image=shuffleimage, background="white", borderwidth=0, command=shuffle_clicked)
 shuffle.place(x=275, y=82)
+
+queueimage=PhotoImage(file="Queue.png")
+queue=Button(window,image=queueimage,background="white",borderwidth=0,command=resize)
+queue.place(x=325,y=83)
 
 #placing down the text
 text()
@@ -326,18 +393,21 @@ song_progress.place(x=2,y=136)
 song_length=Label(window,text="0:00",font=("Calibri", 9), background="white", bd=0)
 song_length.place(x=336,y=136)
 
+#this configues the white background for the ttk slider
 style=ttk.Style()
 style.configure('.', background='white')
 
 status_bar = Label(window, text="", bd=1, relief=GROOVE, anchor=E )
 
+#This is the song position slider
 my_slider = ttk.Scale(window, from_=0, to=100, orient=HORIZONTAL, value=0, command=slide, length=300)
 my_slider.place(x=32,y=132)
 
 slider_label = Label(window, text="0")
 
-#volume_scale = Scale(window, from_=0, to=100,orient = HORIZONTAL, command= set_vol)
-#volume_scale.set(100)
-#volume_scale.pack()
+#This is the volume scale slider
+volume_scale = Scale(window, from_=0, to=100,orient = VERTICAL, command= set_vol,bg="white",borderwidth=0,highlightthickness=0)
+volume_scale.set(100)
+volume_scale.place(x=545,y=30)
 
 window.mainloop()
