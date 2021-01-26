@@ -1,3 +1,24 @@
+"""
+Tanner Farkas & Reeto Ghosh
+***
+January 26th, 2021
+***
+Description: In our summative task, we developed an application interface to
+             replicate an MP3 player. The program takes .mp3 files from the
+             user's computer and adds them to the music player. The user will
+             have access to a variety of features such as playing, pausing,
+             skipping, backskipping, volume control and several other built in
+             features!
+
+             We hope you enjoy our game!
+***
+"""
+
+
+
+
+
+
 #imports tkinter, python's standard GUI
 from tkinter import *
 import tkinter as tk
@@ -81,7 +102,7 @@ def play_time():
     current_time = mixer.music.get_pos() / 1000
 
     #Temporary Label to get data
-    slider_label.config(text=f'Slider: {int(my_slider.get())} and Song Pos: {int(current_time)}') 
+    slider_label.config(text=f'Slider: {int(song_progress_bar.get())} and Song Pos: {int(current_time)}') 
 
     #convert to time format
     global converted_current_time
@@ -112,7 +133,7 @@ def play_time():
         song_progress.config(text=f'{converted_current_time} of  {converted_total_length}')
         song_length.config(text=converted_total_length)
         #updating slider position to proper position in song
-        my_slider.config(value=int(current_time))
+        song_progress_bar.config(value=int(current_time))
     song()
     
     
@@ -282,7 +303,7 @@ def play_clicked():
         paused=True
 
     if converted_current_time == converted_total_length:
-        my_slider.config(value=0)
+        song_progress_bar.config(value=0)
 
         
     text()
@@ -292,7 +313,7 @@ def play_clicked():
     play_time()
     #update slider to proper position
     slider_position = int(total_length)
-    my_slider.config(to=slider_position, value=0)
+    song_progress_bar.config(to=slider_position, value=0)
    
 def pause_clicked():
     #pauses the music and replaces the pause button with the play
@@ -306,7 +327,7 @@ def pause_clicked():
 
 
 def shuffle_clicked():
-    my_slider.config(value=0)
+    song_progress_bar.config(value=0)
     global shuffled
     global songs_random
     global song_number
@@ -341,7 +362,7 @@ def shuffle_clicked():
 
 def slide(x):
     
-    slider_label.config(text=f'{int(my_slider.get())} of {int(total_length)}')
+    slider_label.config(text=f'{int(song_progress_bar.get())} of {int(total_length)}')
     songs=loading_songs(path)
     song_number=0
     random_song_number=0
@@ -400,8 +421,8 @@ style.configure('.', background='white')
 status_bar = Label(window, text="", bd=1, relief=GROOVE, anchor=E )
 
 #This is the song position slider
-my_slider = ttk.Scale(window, from_=0, to=100, orient=HORIZONTAL, value=0, command=slide, length=300)
-my_slider.place(x=32,y=132)
+song_progress_bar = ttk.Scale(window, from_=0, to=100, orient=HORIZONTAL, value=0, command=slide, length=300)
+song_progress_bar.place(x=32,y=132)
 
 slider_label = Label(window, text="0")
 
