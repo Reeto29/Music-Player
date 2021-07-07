@@ -34,7 +34,7 @@ import time
 #This path goes straight to you song folder
 #You will have to change this, as it is specific to your device
 
-path=r"C:\Users\REETO\Documents\GitHub\ICS3U_Summative\Songs"
+path=r"C:\Users\REETO\OneDrive\Documents\GitHub\ICS3U_Summative\Songs"
 mixer.init()
 paused=False
 shuffled=False
@@ -411,7 +411,7 @@ text()
 song_progress=Label(window,text="0:00",font=("Calibri", 9), background="white", bd=0)
 song_progress.place(x=2,y=136)
 
-song_length=Label(window,text="0:00",font=("Calibri", 9), background="white", bd=0)
+song_length=Label(window,text="0:00",font=("Calibri", 9), background="white", bd=0) 
 song_length.place(x=336,y=136)
 
 #this configues the white background for the ttk slider
