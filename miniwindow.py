@@ -31,10 +31,23 @@ import os
 import random
 import time
 
+#get file path from user
+def get_file_path():
+    file_path_ = input(r"Type the path of where the music is located (i.e. C:\'Users\Name\Music-Player\Songs): ")
+    
+    return file_path_
+
+#Sample Paths:
+#path=r"C:\Users\REETO\OneDrive\Documents\GitHub\ICS3U_Summative\Songs"
+#path=r"C:\Users\tanne\Music-Player\Songs"
+
+
+
 #This path goes straight to you song folder
 #You will have to change this, as it is specific to your device
 
-path=r"C:\Users\REETO\OneDrive\Documents\GitHub\ICS3U_Summative\Songs"
+path = get_file_path()
+
 mixer.init()
 paused=False
 shuffled=False

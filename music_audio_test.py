@@ -1,10 +1,14 @@
 #This is the backend
 
 from pygame import mixer
+from miniwindow import get_file_path
 import os
 import random
 import time
-path=r"C:\Users\REETO\Documents\GitHub\ICS3U_Summative\Songs"
+
+
+path = get_file_path()
+
 mixer.init()
 number=1
 muted=0
@@ -19,7 +23,6 @@ def loading_songs(path):
             songs.append(os.path.join(path,filename))
 
     return songs
-
 
 
 
@@ -39,7 +42,9 @@ while True:
     #print(song_number)
     #print(len(songs))
 
-
+    
+    
+    
     print ("""
 
     Type in ONE of the following numbers:
